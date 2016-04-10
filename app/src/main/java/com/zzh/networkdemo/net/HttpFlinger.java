@@ -1,5 +1,9 @@
 package com.zzh.networkdemo.net;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 
 import com.zzh.networkdemo.net.parser.RespParser;
@@ -17,14 +21,25 @@ import java.net.URL;
 public final class HttpFlinger {
 
     private HttpFlinger(){
+
     }
 
+    private static HttpURLConnection urlConnection = null;
+
+
+    /**
+     * 在应用中get可能比较频繁，so，在get方法中没有关闭http的连接。另外提供了关闭的接口。
+     * @param reqURL
+     * @param parser
+     * @param dateLoadCompleteListenner
+     * @param <T>
+     */
     public static <T> void get(final String reqURL, final RespParser<T> parser,
                                final DateLoadCompleteListenner<T> dateLoadCompleteListenner){
         new AsyncTask<Void,Void,T>(){
             @Override
             protected T doInBackground(Void... params) {
-                HttpURLConnection urlConnection = null;
+
                 try {
                     urlConnection = (HttpURLConnection) new URL(reqURL).openConnection();
                     urlConnection.setConnectTimeout(3000);
@@ -36,10 +51,6 @@ public final class HttpFlinger {
                     return parser.parseResponse(result);
                 }catch (Exception e){
                     e.printStackTrace();
-                }finally {
-                    if (urlConnection != null){
-                        urlConnection.disconnect();
-                    }
                 }
                 return null;
             }
@@ -63,4 +74,11 @@ public final class HttpFlinger {
         }
         return stringBuilder.toString();
     }
+
+    public static void closeNetWork(){
+        if(urlConnection != null){
+            urlConnection.disconnect();
+        }
+    }
+
 }
